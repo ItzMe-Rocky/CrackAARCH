@@ -1,0 +1,161 @@
+#!/usr/bin/env python3
+import argparse
+import os
+import time
+import pyzipper
+import random
+import string
+import subprocess
+import sys
+import requests
+
+from colorama import Fore, init
+init(autoreset=True)
+
+VERSION = "1.0.0"
+REPO_RAW_URL = "https://raw.githubusercontent.com/Itz-Me-Rocky/CrackAARCH/main/crackaarch"
+REPO_URL = "https://github.com/Itz-Me-Rocky/CrackAARCH.git"
+
+attempts = 0
+
+def check_for_update():
+    try:
+        response = requests.get(REPO_RAW_URL, timeout=5)
+        if response.status_code == 200:
+            for line in response.text.splitlines():
+                if "VERSION" in line and "=" in line:
+                    remote_version = line.split("=")[1].strip().replace('"', '')
+                    break
+            else:
+                print(Fore.BLUE + "[" + Fore.RED + "+" + Fore.BLUE + "] " + Fore.RED + "Could not determine remote version.")
+                return
+
+            if remote_version == VERSION:
+                print(Fore.BLUE + "[" + Fore.RED + "+" + Fore.BLUE + "] " + Fore.GREEN + "You are using the latest version.")
+            else:
+                print(Fore.BLUE + "[" + Fore.RED + "+" + Fore.BLUE + "] " + Fore.YELLOW + f"Update available - Version {remote_version}")
+                choice = input(Fore.BLUE + "[" + Fore.RED + "+" + Fore.BLUE + "] " + Fore.MAGENTA + "Do you want to update? (Y/N): ").strip().lower()
+                if choice == 'y':
+                    print(Fore.YELLOW + "Updating...")
+                    os.system("rm -rf CrackAARCH")
+                    os.system(f"git clone {REPO_URL}")
+                    os.chdir("CrackAARCH")
+                    os.system("chmod +x setup.sh && ./setup.sh")
+                else:
+                    print(Fore.RED + "Exiting.")
+            sys.exit()
+        else:
+            print(Fore.BLUE + "[" + Fore.RED + "+" + Fore.BLUE + "] " + Fore.RED + "Failed to fetch version info from GitHub.")
+    except Exception as e:
+        print(Fore.BLUE + "[" + Fore.RED + "+" + Fore.BLUE + "] " + Fore.RED + f"Error checking for update: {e}")
+        sys.exit()
+
+def is_zip_encrypted(zip_path):
+    try:
+        with pyzipper.AESZipFile(zip_path) as zf:
+            for zinfo in zf.infolist():
+                if zinfo.flag_bits & 0x1:
+                    return True
+        return False
+    except:
+        return False
+
+def random_suffix(length=3):
+    return ''.join(random.choices(string.ascii_uppercase + string.digits, k=length))
+
+def crack_zip(zip_path, wordlist):
+    global attempts
+    with pyzipper.AESZipFile(zip_path) as zf:
+        for pwd in open(wordlist, "r", errors="ignore"):
+            pwd = pwd.strip()
+            attempts += 1
+            try:
+                for zinfo in zf.infolist():
+                    zf.read(zinfo.filename, pwd=pwd.encode())
+                return pwd
+            except:
+                print(Fore.YELLOW + "[" + Fore.RED + "•" + Fore.YELLOW + "] " + Fore.BLUE + f"Trying: {pwd}")
+    return None
+
+def extract_with_password(zip_path, password, output_folder):
+    with pyzipper.AESZipFile(zip_path) as zf:
+        zf.extractall(path=output_folder, pwd=password.encode())
+
+def main():
+    if '-update' in sys.argv:
+        check_for_update()
+
+    parser = argparse.ArgumentParser(
+        description="crackaarch - Brute-force ZIP password cracker using pyzipper",
+        usage="crackaarch -p <file.zip> -w <wordlist.txt> [-o <output_folder>] [--version] [-update]"
+    )
+    parser.add_argument("-p", "--path", help="Target ZIP file to crack")
+    parser.add_argument("-w", "--wordlist", help="Password wordlist file")
+    parser.add_argument("-o", "--output", help="Folder to extract files if cracked")
+    parser.add_argument("--version", action="store_true", help="Show version")
+
+    args = parser.parse_args()
+
+    if args.version:
+        print(f"crackaarch version {VERSION}")
+        return
+
+    if not args.path or not args.wordlist:
+        parser.print_help()
+        return
+
+    zip_path = args.path
+    wordlist = args.wordlist
+    output_folder = args.output
+
+    if not os.path.isfile(zip_path):
+        print(Fore.BLUE + "[" + Fore.RED + "×" + Fore.BLUE + "] " + Fore.RED + "ZIP file does not exist.")
+        return
+    if not os.path.isfile(wordlist):
+        print(Fore.BLUE + "[" + Fore.RED + "×" + Fore.BLUE + "] " + Fore.RED + "Wordlist file does not exist.")
+        return
+
+    print(Fore.BLUE + "[" + Fore.RED + "*" + Fore.BLUE + "] " + Fore.YELLOW + "Starting Bruteforce Attack\n")
+
+    if not is_zip_encrypted(zip_path):
+        print(Fore.BLUE + "[" + Fore.RED + "+" + Fore.BLUE + "] " + Fore.GREEN + "ZIP file is not password protected.")
+        return
+
+    folder_changed = False
+    original = output_folder
+    if output_folder and os.path.exists(output_folder):
+        new_suffix = random_suffix()
+        output_folder = f"{original}R{new_suffix}"
+        folder_changed = True
+
+    start = time.time()
+    password = crack_zip(zip_path, wordlist)
+    end = time.time()
+
+    duration = end - start
+    rate = attempts / duration if duration > 0 else 0
+
+    print()
+    if password:
+        print(Fore.BLUE + "[" + Fore.RED + "✓" + Fore.BLUE + "] " + Fore.GREEN + f"Password found: {password}")
+        if output_folder:
+            os.makedirs(output_folder, exist_ok=True)
+            extract_with_password(zip_path, password, output_folder)
+            if folder_changed:
+                print(Fore.BLUE + "[" + Fore.RED + "-" + Fore.BLUE + "] " + Fore.RED + f"Folder '{original}' exists." + Fore.GREEN + f" Using '{output_folder}' instead.")
+            print(Fore.BLUE + "[" + Fore.RED + "✓" + Fore.BLUE + "] " + Fore.GREEN + f"Extracted to: {output_folder}")
+        else:
+            print(Fore.BLUE + "[" + Fore.RED + "!" + Fore.BLUE + "] " + Fore.YELLOW + "Extraction skipped. Use -o to extract.")
+        print(Fore.MAGENTA + "\n========== INFO ==========\n")
+        print(Fore.BLUE + "[" + Fore.RED + "+" + Fore.BLUE + "] " + Fore.GREEN + f"Time taken   : {duration:.2f} seconds")
+        print(Fore.BLUE + "[" + Fore.RED + "+" + Fore.BLUE + "] " + Fore.GREEN + f"Attempts     : {attempts}")
+        print(Fore.BLUE + "[" + Fore.RED + "+" + Fore.BLUE + "] " + Fore.GREEN + f"Tries/sec    : {rate:.2f}")
+    else:
+        print(Fore.BLUE + "[" + Fore.RED + "*" + Fore.BLUE + "] " + Fore.RED + "Password not found in wordlist.")
+        print(Fore.MAGENTA + "\n========== INFO ==========\n")
+        print(Fore.BLUE + "[" + Fore.RED + "+" + Fore.BLUE + "] " + Fore.RED + f"Time taken   : {duration:.2f} seconds")
+        print(Fore.BLUE + "[" + Fore.RED + "+" + Fore.BLUE + "] " + Fore.RED + f"Attempts     : {attempts}")
+        print(Fore.BLUE + "[" + Fore.RED + "+" + Fore.BLUE + "] " + Fore.RED + f"Tries/sec    : {rate:.2f}")
+
+if __name__ == "__main__":
+    main()
