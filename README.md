@@ -1,6 +1,6 @@
 <h1 align="center">
   <br>
-  <a href="https://github.com/Itz-Rocky/Insta-BruteForce"><img src="https://iili.io/36BuzNV.png" alt="server-down"></a>
+  <a href="https://github.com/ItzMe-Rocky/CrackAARCH"><img src="https://iili.io/F9hOunf.png" alt="server-down"></a>
   <br>
   ZIP FILE CRACKER
   <br>
@@ -12,15 +12,12 @@
 >This tool is intended strictly for educational purposes to understand network security and should only be used in environments where you have explicit authorization.
 >I am not responsible for any kind of damage or problems. Use at your own risk.
 
+>I will add the option to crack 7z, rar, pdf, and docx soon.
 
 ## Installation ( Termux )
 
 ```shell script
-apt install git -y
-```
-
-```shell script
-apt install python -y
+pkg install git -y
 ```
 
 ```shell script
@@ -41,7 +38,7 @@ bash setup.sh
 crackaarch --help
 ```
 
-##To Update 
+## To Update 
 
 ```shell script
 crackaarch -update 

@@ -12,9 +12,9 @@ import requests
 from colorama import Fore, init
 init(autoreset=True)
 
-VERSION = "1.0.0"
-REPO_RAW_URL = "https://raw.githubusercontent.com/Itz-Me-Rocky/CrackAARCH/main/crackaarch"
-REPO_URL = "https://github.com/Itz-Me-Rocky/CrackAARCH.git"
+VERSION = "1.1.0"
+REPO_RAW_URL = "https://raw.githubusercontent.com/ItzMe-Rocky/CrackAARCH/main/crackaarch"
+REPO_URL = "https://github.com/ItzMe-Rocky/CrackAARCH.git"
 
 attempts = 0
 
@@ -87,12 +87,13 @@ def main():
 
     parser = argparse.ArgumentParser(
         description="crackaarch - Brute-force ZIP password cracker using pyzipper",
-        usage="crackaarch -p <file.zip> -w <wordlist.txt> [-o <output_folder>] [--version] [-update]"
+        usage="crackaarch -p <file.zip> -w <wordlist.txt> [-o <output_folder>] "
     )
     parser.add_argument("-p", "--path", help="Target ZIP file to crack")
     parser.add_argument("-w", "--wordlist", help="Password wordlist file")
     parser.add_argument("-o", "--output", help="Folder to extract files if cracked")
     parser.add_argument("--version", action="store_true", help="Show version")
+    parser.add_argument("-update ", action="store_true", help="For Updating")
 
     args = parser.parse_args()
 
