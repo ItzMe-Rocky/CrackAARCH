@@ -9,7 +9,7 @@
 
 ## Disclaimer 
 
->This tool is intended strictly for educational purposes to understand network security and should only be used in environments where you have explicit authorization.
+>This tool is intended strictly for educational purposes to understand security and should only be used in environments where you have explicit authorization.
 >I am not responsible for any kind of damage or problems. Use at your own risk.
 
 >I will add the option to crack 7z, rar, pdf, and docx soon.

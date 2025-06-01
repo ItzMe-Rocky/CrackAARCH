@@ -17,6 +17,8 @@ echo -e "\033[32mProcessing 75%\033[0m"
 chmod +x /data/data/com.termux/files/usr/bin/crackaarch
 echo -e "\033[32mProcessing 100%\033[0m"
 sleep 1
+cd $HOME
+rm -rf CrackAARCH
 echo -e "\033[32mFinished Successfully\033[0m"
 
 
