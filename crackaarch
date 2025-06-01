@@ -12,7 +12,7 @@ import requests
 from colorama import Fore, init
 init(autoreset=True)
 
-VERSION = "1.1.0"
+VERSION = "1.1.1"
 REPO_RAW_URL = "https://raw.githubusercontent.com/ItzMe-Rocky/CrackAARCH/main/crackaarch"
 REPO_URL = "https://github.com/ItzMe-Rocky/CrackAARCH.git"
 

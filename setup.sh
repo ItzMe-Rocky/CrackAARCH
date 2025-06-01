@@ -6,7 +6,7 @@ sleep 2
 echo -e "\033[32mPython Installed.\033[0m"
 sleep 2
 echo -e "\033[32mInstalling Requirements.\033[0m"
-pip install pyzipper requests
+pip install pyzipper requests colorama
 pkg install openssl -y
 sleep 1
 echo -e "\033[32mProcessing 0%\033[0m"
